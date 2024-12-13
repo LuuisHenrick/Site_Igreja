@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   ResponsiveContainer,
   PieChart,
@@ -11,7 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'recharts';
-import type { FinancialRecord } from '../../lib/store';
+import {FinancialRecord} from "../../types/FinancialRecord.ts";
 
 interface FinancialChartsProps {
   records: FinancialRecord[];
@@ -49,6 +49,10 @@ export const FinancialCharts: React.FC<FinancialChartsProps> = ({
     name,
     amount: value,
   }));
+
+  useEffect(() => {
+    // Any additional logic if needed to handle updates
+  }, [records]);
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">

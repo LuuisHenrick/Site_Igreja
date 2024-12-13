@@ -263,7 +263,6 @@ export const financialApi = {
     const { data, error } = await supabase
       .from('financial_records')
       .update(record)
-      .eq('id', id)
       .select()
       .single();
 

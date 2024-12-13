@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, TrendingDown, PieChart, Plus, Filter, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
@@ -20,6 +20,10 @@ export const Finance: React.FC = () => {
 
   const store = useStore();
   const financialRecords = store.financialRecords || [];
+
+  useEffect(() => {
+    store.fetchInitialData();
+  }, []);
 
   const filteredRecords = financialRecords.filter(record => {
     if (filterType === 'all') return true;
@@ -138,11 +142,12 @@ export const Finance: React.FC = () => {
         title="Add Transaction"
       >
         <TransactionForm
-          onSubmit={(data) => {
-            store.addFinancialRecord({
-              id: Math.random().toString(36).substring(2),
+          onSubmit={async (data) => {
+            await store.addFinancialRecord({
               ...data,
               date: new Date().toISOString(),
+              status: 'pending', // or any default status
+              created_at: new Date().toISOString(),
             });
             setIsAddModalOpen(false);
             toast.success('Transaction added successfully');

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
+import { v4 as uuidv4 } from 'uuid';
 import { membersApi, assetsApi, mediaApi, financialApi, eventsApi, educationApi } from './api';
-
-// Keep existing interfaces...
+import { FinancialRecord } from "../types/FinancialRecord.ts";
 
 interface ChurchState {
   members: Member[];
@@ -17,6 +17,8 @@ interface ChurchState {
   // Actions
   setToastMessage: (message: { type: 'success' | 'error'; message: string } | null) => void;
   fetchInitialData: () => Promise<void>;
+  addFinancialRecord: (record: Omit<FinancialRecord, 'id'>) => Promise<void>;
+  deleteFinancialRecord: (id: string) => Promise<void>;
   
   // Other actions...
 }
@@ -31,7 +33,7 @@ export const useStore = create<ChurchState>((set, get) => ({
   isLoading: false,
   error: null,
   toastMessage: null,
-
+  
   setToastMessage: (message) => set({ toastMessage: message }),
 
   fetchInitialData: async () => {
@@ -52,7 +54,6 @@ export const useStore = create<ChurchState>((set, get) => ({
         eventsApi.getAll(),
         educationApi.getAll()
       ]);
-
       set({
         members,
         assets,
@@ -72,5 +73,32 @@ export const useStore = create<ChurchState>((set, get) => ({
     }
   },
 
-  // Keep existing actions but update them to use try-catch and proper error handling...
+  addFinancialRecord: async (record) => {
+    try {
+      const newRecord = await financialApi.create({
+        ...record,
+        id: uuidv4(),
+      });
+      set((state) => ({
+        financialRecords: [...state.financialRecords, newRecord]
+      }));
+    } catch (error) {
+      console.error('Error adding financial record:', error);
+      set({ error: error instanceof Error ? error.message : 'Failed to add financial record' });
+    }
+  },
+
+  deleteFinancialRecord: async (id) => {
+    try {
+      await financialApi.delete(id);
+      set((state) => ({
+        financialRecords: state.financialRecords.filter((r) => r.id !== id)
+      }));
+    } catch (error) {
+      console.error('Error deleting financial record:', error);
+      set({ error: error instanceof Error ? error.message : 'Failed to delete financial record' });
+    }
+  },
+
+  // Other actions...
 }));

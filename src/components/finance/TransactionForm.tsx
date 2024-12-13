@@ -4,11 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { DollarSign } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { transactionSchema, categories, type TransactionFormData } from './TransactionValidation';
-import type { FinancialRecord } from '../../lib/store';
+import {FinancialRecord} from "../../types/FinancialRecord.ts";
 
 interface TransactionFormProps {
+  onSubmit: (data: Omit<FinancialRecord, 'id'>) => void;
   transaction?: FinancialRecord;
-  onSubmit: (data: TransactionFormData) => void;
   onCancel?: () => void;
   isSubmitting?: boolean;
 }
@@ -43,7 +43,15 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
   const handleFormSubmit = async (data: TransactionFormData) => {
     try {
-      await onSubmit(data);
+      await onSubmit({
+        type: data.type,
+        amount: data.amount,
+        category: data.category,
+        description: data.description,
+        date: new Date().toISOString(),
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      });
       reset();
     } catch (error) {
       console.error('Transaction submission failed:', error);
